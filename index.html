@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Unity WebGL Player</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -90,17 +91,17 @@
     </div>
 
     <script>
-      const canvas = document.querySelector("#unity-canvas");
-      const container = document.querySelector("#unity-container");
-      const loadingScreen = document.querySelector("#loading-screen");
-      const progressBarFill = document.querySelector("#loading-progress-bar-fill");
+        const canvas = document.querySelector("#unity-canvas");
+        const container = document.querySelector("#unity-container");
+        const loadingScreen = document.querySelector("#loading-screen");
+        const progressBarFill = document.querySelector("#loading-progress-bar-fill");
 
-      // 목표 해상도의 비율 (1080x1920)
-      const targetWidth = 1080;
-      const targetHeight = 1920;
+        // 목표 해상도의 비율 (1080x1920)
+        const targetWidth = 1080;
+        const targetHeight = 1920;
 
-      // 캔버스 크기 동적 조절 함수
-      function resizeCanvas() {
+        // 캔버스 크기 동적 조절 함수
+        function resizeCanvas() {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
 
@@ -108,25 +109,25 @@
         const windowRatio = windowWidth / windowHeight;
 
         if (windowRatio > targetRatio) {
-          canvas.style.width = `${windowHeight * targetRatio}px`;
-          canvas.style.height = `${windowHeight}px`;
+            canvas.style.width = `${windowHeight * targetRatio}px`;
+            canvas.style.height = `${windowHeight}px`;
         } else {
-          canvas.style.width = `${windowWidth}px`;
-          canvas.style.height = `${windowWidth / targetRatio}px`;
+            canvas.style.width = `${windowWidth}px`;
+            canvas.style.height = `${windowWidth / targetRatio}px`;
         }
 
         // 캔버스를 컨테이너 중앙에 배치
         canvas.style.marginLeft = `0px`;
         canvas.style.marginTop = `0px`;
-      }
+        }
 
-      window.addEventListener("resize", resizeCanvas);
-      window.onload = resizeCanvas;
+        window.addEventListener("resize", resizeCanvas);
+        window.onload = resizeCanvas;
 
-      // Unity WebGL 빌드 설정
-      const buildUrl = "Build";
-      const loaderUrl = `${buildUrl}/Build.loader.js`;
-      const config = {
+        // Unity WebGL 빌드 설정
+        const buildUrl = "Build";
+        const loaderUrl = `${buildUrl}/Build.loader.js`;
+        const config = {
         dataUrl: `${buildUrl}/Build.data.unityweb`,
         frameworkUrl: `${buildUrl}/Build.framework.js.unityweb`,
         codeUrl: `${buildUrl}/Build.wasm.unityweb`,
@@ -134,85 +135,111 @@
         companyName: "Bluesom",
         productName: "강남상어 키우기",
         productVersion: "2.6.1"
-      };
+        };
 
-      // Unity 빌드 로드
-      const script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          // 로딩 진행 상태 업데이트
-          progressBarFill.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          // 로딩 완료 후 로딩 화면 숨기기
-          loadingScreen.style.display = "none";
-          console.log("Unity WebGL successfully loaded!");
-        }).catch((message) => {
-          alert(`Unity WebGL failed to load: ${message}`);
-        });
-      };
-      document.body.appendChild(script);
+        // Unity 빌드 로드
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                // 로딩 진행 상태 업데이트
+                progressBarFill.style.width = 100 * progress + "%";
+            }).then((unityInstance) => {
+                // 로딩 완료 후 로딩 화면 숨기기
+                loadingScreen.style.display = "none";
+                console.log("Unity WebGL successfully loaded!");
+            }).catch((message) => {
+                alert(`Unity WebGL failed to load: ${message}`);
+            });
+        };
+        document.body.appendChild(script);
 
-      // TON 연결 스크립트
-      var tonConnectUI = null;
+        //텔레그램 스타 연동 스크립트
+        Telegram.WebApp.ready();
+    
+        // 유니티로 초기화 정보 전달
+        window.onload = function() {
+            unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
+                user: Telegram.WebApp.initDataUnsafe.user,
+                chat: Telegram.WebApp.initDataUnsafe.chat
+            }));
+        }
 
-      // path는 Unity의 StreamingAssetPath 폴더 경로입니다.
-      function initTonConnectUI() {
-          tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-              //manifestUrl: 'https://<YOUR_APP_URL>/tonconnect-manifest.json',
-              //manifestUrl: streamingAssetPath + '/tonconnect-manifest.json',
-              manifestUrl: 'https://dl.dropboxusercontent.com/scl/fi/s325wuk2agso3cd9b2nen/tonconnect-manifest.json?rlkey=vnzw6psrgnhfyyu3t5jhwq1dl',
-              buttonRootId: 'ton-connect-button'
-          });
+        // 유니티에서 결제 요청 시 호출될 함수
+        window.requestPayment = function(itemId) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                action: 'buy_stars',
+                item_id: itemId
+            }));
+        }
 
-          // Ton Connect 버튼을 표시
-          //document.getElementById("ton-connect-button").style.display = "block";
-          connectButtonOff();
+        window.requestPayment2 = function(itemName, itemPrice) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                action: 'buy_stars',
+                item_id: itemName,
+                item_price: itemPrice
+            }));
+        }
 
-        // TonConnect 상태 변경 이벤트 리스너 등록
-        tonConnectUI.onStatusChange((walletInfo) => {
-        if (walletInfo) {
-            console.log("지갑 연결됨:", walletInfo);
-            console.log("지갑 주소:", walletInfo.account.address);
+        // TON 연결 스크립트
+        var tonConnectUI = null;
 
-            // Unity WebGL로 지갑 주소 전달
-            SendMessage("TONConnect", "OnWalletConnected", walletInfo.account.address);
-            } else {
-                console.log("지갑 연결 해제됨");
-                SendMessage("TONConnect", "OnWalletDisconnected", "");
+        function initTonConnectUI() {
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                //manifestUrl: 'https://<YOUR_APP_URL>/tonconnect-manifest.json',
+                //manifestUrl: streamingAssetPath + '/tonconnect-manifest.json',
+                manifestUrl: 'https://dl.dropboxusercontent.com/scl/fi/s325wuk2agso3cd9b2nen/tonconnect-manifest.json?rlkey=vnzw6psrgnhfyyu3t5jhwq1dl',
+                buttonRootId: 'ton-connect-button'
+            });
+
+            // Ton Connect 버튼을 표시
+            //document.getElementById("ton-connect-button").style.display = "block";
+            connectButtonOff();
+
+            // TonConnect 상태 변경 이벤트 리스너 등록
+            tonConnectUI.onStatusChange((walletInfo) => {
+                if (walletInfo) {
+                    console.log("지갑 연결됨:", walletInfo);
+                    console.log("지갑 주소:", walletInfo.account.address);
+
+                    // Unity WebGL로 지갑 주소 전달
+                    SendMessage("TONConnect", "OnWalletConnected", walletInfo.account.address);
+                } else {
+                    console.log("지갑 연결 해제됨");
+                    SendMessage("TONConnect", "OnWalletDisconnected", "");
+                }
+            });
+        }
+
+        function getWalletAddress() {
+            if (!tonConnectUI) 
+                return;
+            return tonConnectUI.wallet ? tonConnectUI.wallet.account.address : null;
+        }
+
+        function sendTransaction(to, amount) {
+            if (!tonConnectUI){
+                console.error("지갑이 초기화되지 않았습니다!");
+                return;
             }
-        });
-      }
+            if (!tonConnectUI.wallet) {
+                console.error("지갑이 연결되지 않았습니다!");
+                return;
+            }
+            tonConnectUI.sendTransaction({
+                messages: [{ address: to, amount: amount.toString() }]
+            });
+        }
 
-      function getWalletAddress() {
-          if (!tonConnectUI) 
-              return;
-          return tonConnectUI.wallet ? tonConnectUI.wallet.account.address : null;
-      }
+        //지갑버튼 안 보이게
+        function connectButtonOff() {
+            document.getElementById("ton-connect-button").style.display = "none";
+        }
 
-      function sendTransaction(to, amount) {
-          if (!tonConnectUI){
-              console.error("지갑이 초기화되지 않았습니다!");
-              return;
-          }
-          if (!tonConnectUI.wallet) {
-              console.error("지갑이 연결되지 않았습니다!");
-              return;
-          }
-          tonConnectUI.sendTransaction({
-              messages: [{ address: to, amount: amount.toString() }]
-          });
-      }
-
-      //지갑버튼 안 보이게
-      function connectButtonOff() {
-          document.getElementById("ton-connect-button").style.display = "none";
-      }
-
-      //지갑 버튼을 보이게 
-      function connectButtonOn() {
-          document.getElementById("ton-connect-button").style.display = "block";
-      }
+        //지갑 버튼을 보이게 
+        function connectButtonOn() {
+            document.getElementById("ton-connect-button").style.display = "block";
+        }
     </script>
 </body>
 </html>
