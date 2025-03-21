@@ -128,24 +128,26 @@
         productVersion: "2.6.1"
         };
 
+        let unityInstance = null; // 전역으로 선언
+
         // Unity 빌드 로드
         const script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
             createUnityInstance(canvas, config, (progress) => {
                 progressBarFill.style.width = 100 * progress + "%";
-            }).then((unityInstance) => {
+            }).then((instance) => {
+                unityInstance = instance; // 전역에 할당
                 loadingScreen.style.display = "none";
 
-                // Telegram WebApp ready 이후 유니티 메시지 전송
                 Telegram.WebApp.ready();
                 unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
                     user: Telegram.WebApp.initDataUnsafe.user,
                     chat: Telegram.WebApp.initDataUnsafe.chat
                 }));
 
-                // 추가적으로 유니티에서 호출할 함수들 등록
-                window.requestPayment = function(itemId) {
+                // 유니티에서 호출할 함수들 등록
+                window.requestPayment = function (itemId) {
                     Telegram.WebApp.sendData(JSON.stringify({
                         action: 'buy_stars',
                         item_id: itemId
@@ -160,6 +162,7 @@
                         item_price: itemPrice
                     }));
                 }
+
             }).catch((message) => {
                 alert(`Unity WebGL failed to load: ${message}`);
             });
@@ -170,12 +173,18 @@
         Telegram.WebApp.ready();
     
         // 유니티로 초기화 정보 전달
-        window.onload = function() {
-            unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
-                user: Telegram.WebApp.initDataUnsafe.user,
-                chat: Telegram.WebApp.initDataUnsafe.chat
-            }));
-        }
+        // 전역 초기화 부분 수정
+        //window.onload = function () {
+        //    // unityInstance가 로드되었을 때만 호출
+        //    if (unityInstance) {
+        //        unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
+        //            user: Telegram.WebApp.initDataUnsafe.user,
+        //            chat: Telegram.WebApp.initDataUnsafe.chat
+        //        }));
+        //    } else {
+        //        console.warn("유니티가 아직 로딩되지 않았습니다.");
+        //    }
+        //}
 
         // TON Connect
         var tonConnectUI = null;
