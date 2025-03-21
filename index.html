@@ -117,11 +117,11 @@
 
         // Unity WebGL 빌드 설정
         const buildUrl = "Build";
-        const loaderUrl = `${buildUrl}/Build.loader.js`;
+        const loaderUrl = `${buildUrl}/WebBuild.loader.js`;
         const config = {
-        dataUrl: `${buildUrl}/Build.data.unityweb`,
-        frameworkUrl: `${buildUrl}/Build.framework.js.unityweb`,
-        codeUrl: `${buildUrl}/Build.wasm.unityweb`,
+        dataUrl: `${buildUrl}/WebBuild.data.unityweb`,
+        frameworkUrl: `${buildUrl}/WebBuild.framework.js.unityweb`,
+        codeUrl: `${buildUrl}/WebBuild.wasm.unityweb`,
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Bluesom",
         productName: "강남상어 키우기",
@@ -152,7 +152,8 @@
                     }));
                 }
 
-                window.requestPayment2 = function(itemName, itemPrice) {
+                window.requestPayment2 = function (itemName, itemPrice) {
+                    console.log("아이템 구매!!:", itemName, itemPrice);
                     Telegram.WebApp.sendData(JSON.stringify({
                         action: 'buy_stars',
                         item_id: itemName,
