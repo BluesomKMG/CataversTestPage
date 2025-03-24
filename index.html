@@ -146,6 +146,8 @@
                     chat: Telegram.WebApp.initDataUnsafe.chat
                 }));
 
+                console.log("텔레그램 플랫폼:", Telegram.WebApp.platform);
+
                 // 유니티에서 호출할 함수들 등록
                 window.requestPayment = function (itemId) {
                     Telegram.WebApp.sendData(JSON.stringify({
@@ -156,6 +158,7 @@
 
                 window.requestPayment2 = function (itemName, itemPrice) {
                     console.log("▶▶▶ 아이템 구매!!:", itemName);
+                    unityInstance.SendMessage('unitTelegramStarTestManageryInstance', 'ToUnityMessage', itemName);
                     Telegram.WebApp.sendData(JSON.stringify({
                         action: 'buy_stars',
                         item_id: itemName,
