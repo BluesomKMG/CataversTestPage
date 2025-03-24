@@ -158,7 +158,7 @@
 
                 window.requestPayment2 = function (itemName, itemPrice) {
                     console.log("▶▶▶ 아이템 구매!!:", itemName);
-                    unityInstance.SendMessage('unitTelegramStarTestManageryInstance', 'ToUnityMessage', itemName);
+                    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', itemName);
                     Telegram.WebApp.sendData(JSON.stringify({
                         action: 'buy_stars',
                         item_id: itemName,
