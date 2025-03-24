@@ -147,6 +147,9 @@
                 }));
 
                 console.log("텔레그램 플랫폼:", Telegram.WebApp.platform);
+                //유니티 확인 메세지
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'platform:' + Telegram.WebApp.platform);
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'sendData 지원 여부:' + (typeof Telegram.WebApp.sendData));
 
                 // 유니티에서 호출할 함수들 등록
                 window.requestPayment = function (itemId) {
