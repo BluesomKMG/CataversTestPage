@@ -151,6 +151,8 @@
                 //유니티 확인 메세지
                 unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'platform:' + Telegram.WebApp.platform);
                 unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'sendData 지원 여부:' + (typeof Telegram.WebApp.sendData));
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'Telegram.WebApp.initData가 존재하는가? ' + Telegram.WebApp.initData);
+
 
                 // 유니티에서 호출할 함수들 등록
                 window.requestPayment = function (itemId) {
