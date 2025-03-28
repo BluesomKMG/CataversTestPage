@@ -173,7 +173,9 @@
                         username: Telegram.WebApp.initDataUnsafe.user?.username
                     })
 
-                    Telegram.WebApp.sendData(jsonData);
+                    Telegram.WebApp.sendData(jsonData, (event) => { 
+                        unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "📡 `sendData()` 실행됨: " + JSON.stringify(event));
+                    });
                     //유니티 확인 메세지
                     unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', jsonData.toString());
                 }
