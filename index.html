@@ -173,11 +173,15 @@
                         username: Telegram.WebApp.initDataUnsafe.user?.username
                     })
 
-                    Telegram.WebApp.sendData(jsonData, (event) => { 
-                        unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "📡 `sendData()` 실행됨: " + JSON.stringify(event));
-                    });
-                    //유니티 확인 메세지
-                    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', jsonData.toString());
+                    try {
+                        Telegram.WebApp.sendData(jsonData);
+                        unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "📡 `sendData()` 실행됨: " + jsonData);
+                    }
+                    catch (error) {
+                        unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "❌ `sendData()` 오류: " + JSON.stringify(error.message));
+                    }
+                    // ✅ 유니티 확인 메세지
+                    unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "📤 전송 데이터: " + jsonData);
                 }
 
             }).catch((message) => {
