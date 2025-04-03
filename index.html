@@ -213,16 +213,21 @@
 
                 // 결제 UI 호출
                 Telegram.WebApp.openInvoice(invoiceLink, (status) => {
+                    var logMessage;
                     if (status === 'paid') {
-                        console.log('Payment successful');
+                        logMessage = "Payment successful";
                         // 결제 성공 후 처리 로직
                     } else {
-                        console.log('Payment status:', status);
+                        logMessage = 'Payment status:' + status;
                         // 결제 실패 또는 취소 시 처리 로직
                     }
+                    console.log(logMessage);
+                    unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣Payment Result: " + logMessage);
                 });
             } catch (error) {
                 console.error('Payment initiation failed:', error);
+                // ✅ 유니티 확인 메세지
+                unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣Payment initiation failed: " + error);
             }
         }
 
