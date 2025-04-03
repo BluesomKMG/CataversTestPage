@@ -175,7 +175,9 @@
                     })
 
                     try {
-                        Telegram.WebApp.sendData(jsonData);
+                        //Telegram.WebApp.sendData(jsonData); //아이템 구매 요청을 bot에게 보냅니다 
+                        initiatePayment();
+
                         unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "📡 `sendData()` 실행됨: " + jsonData);
                     }
                     catch (error) {
@@ -191,22 +193,38 @@
         };
         document.body.appendChild(script);
 
-        //텔레그램 스타 연동 스크립트
-        //Telegram.WebApp.ready();
-    
-        // 유니티로 초기화 정보 전달
-        // 전역 초기화 부분 수정
-        //window.onload = function () {
-        //    // unityInstance가 로드되었을 때만 호출
-        //    if (unityInstance) {
-        //        unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
-        //            user: Telegram.WebApp.initDataUnsafe.user,
-        //            chat: Telegram.WebApp.initDataUnsafe.chat
-        //        }));
-        //    } else {
-        //        console.warn("유니티가 아직 로딩되지 않았습니다.");
-        //    }
-        //}
+        //스타 구매 링크
+        async function initiatePayment() {
+            try {
+                // 서버에서 인보이스 링크 가져오기
+                const response = await fetch('/CreateInvoice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: '상품명',
+                        description: '상품 설명',
+                        payload: 'unique_payload',
+                        currency: 'XTR',
+                        prices: [{ label: '상품명', amount: 1000 }], // 가격은 최소 단위로 설정
+                    }),
+                });
+
+                const { invoiceLink } = await response.json();
+
+                // 결제 UI 호출
+                Telegram.WebApp.openInvoice(invoiceLink, (status) => {
+                    if (status === 'paid') {
+                        console.log('Payment successful');
+                        // 결제 성공 후 처리 로직
+                    } else {
+                        console.log('Payment status:', status);
+                        // 결제 실패 또는 취소 시 처리 로직
+                    }
+                });
+            } catch (error) {
+                console.error('Payment initiation failed:', error);
+            }
+        }
 
         // TON Connect
         var tonConnectUI = null;
