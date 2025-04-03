@@ -195,8 +195,8 @@
         //스타 구매 링크
         async function initiatePayment() {
             try {
-                // 서버에서 인보이스 링크 가져오기
-                const response = await fetch('/CreateInvoice', {
+                // 서버에서 인보이스 링크 가져오기 (URL 하드링크)
+                const response = await fetch('https://0e98-112-220-78-250.ngrok-free.app/CreateInvoice', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
