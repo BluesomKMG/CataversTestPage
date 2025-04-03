@@ -176,7 +176,7 @@
 
                     try {
                         //Telegram.WebApp.sendData(jsonData); //아이템 구매 요청을 bot에게 보냅니다 
-                        initiatePayment();
+                        await initiatePayment();
 
                         unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "📡 `sendData()` 실행됨: " + jsonData);
                     }
@@ -210,6 +210,7 @@
                 });
 
                 const { invoiceLink } = await response.json();
+                unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣invoiceLink: " + invoiceLink);
 
                 // 결제 UI 호출
                 Telegram.WebApp.openInvoice(invoiceLink, (status) => {
