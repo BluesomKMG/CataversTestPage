@@ -176,8 +176,7 @@
 
                     try {
                         //Telegram.WebApp.sendData(jsonData); //아이템 구매 요청을 bot에게 보냅니다 
-                        await initiatePayment();
-
+                        initiatePayment();
                         unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "📡 `sendData()` 실행됨: " + jsonData);
                     }
                     catch (error) {
