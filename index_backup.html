@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Unity WebGL Player</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <!--<script src="https://telegram.org/js/telegram-web-app.js"></script>-->
+    <script src="./libs/telegram-web-app.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black; /* 배경 색상 */
+        }
+
+        #unity-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: black;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            background-color: black;
+        }
+
+        /* 로딩 화면 스타일 */
+        #loading-screen {
+            position: absolute;
+            top: 50%; /* 화면 세로 중앙 정렬 */
+            left: 50%; /* 화면 가로 중앙 정렬 */
+            transform: translate(-50%, -50%); /* 정확한 중앙 위치 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 10; /* 최상위 표시 */
+        }
+
+        #loading-progress-bar {
+            width: 120%;
+            height: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        #loading-progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #00ff00;
+            transition: width 0.2s;
+        }
+
+        #ton-connect-button {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            display: none; /* 초기에는 숨김 */
+        }
+    </style>
+</head>
+<body>
+    <!-- TON 지갑 연결 버튼 -->
+    <div id="ton-connect-button"></div>
+
+    <!-- Unity WebGL 컨테이너 -->
+    <div id="unity-container">
+        <canvas id="unity-canvas"></canvas>
+
+        <!-- 로딩 화면 -->
+        <div id="loading-screen">
+            <!-- 로딩 상태 텍스트 -->
+            <div>Loading...</div>
+            <!-- 로딩 진행 바 -->
+            <div id="loading-progress-bar">
+                <div id="loading-progress-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.querySelector("#unity-canvas");
+        const loadingScreen = document.querySelector("#loading-screen");
+        const progressBarFill = document.querySelector("#loading-progress-bar-fill");
+        const targetWidth = 1080;
+        const targetHeight = 1920;
+
+        function resizeCanvas() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const targetRatio = targetWidth / targetHeight;
+            const windowRatio = windowWidth / windowHeight;
+
+            if (windowRatio > targetRatio) {
+                canvas.style.height = `100%`;
+                canvas.style.width = `${100 * targetRatio / windowRatio}%`;
+            } else {
+                canvas.style.width = `100%`;
+                canvas.style.height = `${100 * windowRatio / targetRatio}%`;
+            }
+            canvas.style.margin = "0 auto";
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        // Unity WebGL 빌드 설정
+        const buildUrl = "Build";
+        const loaderUrl = `${buildUrl}/WebBuild.loader.js`;
+        const config = {
+        dataUrl: `${buildUrl}/WebBuild.data`,
+        frameworkUrl: `${buildUrl}/WebBuild.framework.js`,
+        codeUrl: `${buildUrl}/WebBuild.wasm`,
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Bluesom",
+        productName: "강남상어 키우기",
+        productVersion: "2.6.1"
+        };
+
+        let unityInstance = null; // 전역으로 선언
+
+        // Unity 빌드 로드
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                progressBarFill.style.width = 100 * progress + "%";
+            }).then((instance) => {
+                unityInstance = instance; // 전역에 할당
+                loadingScreen.style.display = "none";
+
+                Telegram.WebApp.ready();
+                unityInstance.SendMessage('TelegramStarTestManager', 'OnTelegramInit', JSON.stringify({
+                    user: Telegram.WebApp.initDataUnsafe.user,
+                    chat: Telegram.WebApp.initDataUnsafe.chat
+                }));
+
+                console.log("텔레그램 플랫폼:", Telegram.WebApp.platform);
+                console.log("Init Data : ", Telegram.WebApp.initDataUnsafe);
+                //유니티 확인 메세지
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'platform:' + Telegram.WebApp.platform);
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'sendData 지원 여부:' + (typeof Telegram.WebApp.sendData));
+                unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'Telegram.WebApp.initData가 존재하는가? ' + Telegram.WebApp.initData);
+
+
+                // 유니티에서 호출할 함수들 등록
+                window.requestPayment = function (itemId) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        action: 'buy_stars',
+                        item_id: itemId
+                    }));
+                }
+
+                window.requestPayment2 = function (itemName, itemPrice) {
+                    console.log("▶▶▶ 아이템 구매!!:", itemName);
+
+                    var jsonData = JSON.stringify({
+                        action: 'buy_stars',
+                        item_id: itemName,
+                        item_price: itemPrice,
+                        user_id: Telegram.WebApp.initDataUnsafe.user?.id,
+                        username: Telegram.WebApp.initDataUnsafe.user?.username
+                    })
+
+                    try {
+                        //Telegram.WebApp.sendData(jsonData); //아이템 구매 요청을 bot에게 보냅니다 
+                        initiatePayment();
+                        unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "📡 `sendData()` 실행됨: " + jsonData);
+                    }
+                    catch (error) {
+                        unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', "❌ `sendData()` 오류: " + JSON.stringify(error.message));
+                    }
+                    // ✅ 유니티 확인 메세지
+                    unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "📤 전송 데이터: " + jsonData);
+                }
+
+            }).catch((message) => {
+                alert(`Unity WebGL failed to load: ${message}`);
+            });
+        };
+        document.body.appendChild(script);
+
+        //스타 구매 링크
+        async function initiatePayment() {
+            try {
+                // 서버에서 인보이스 링크 가져오기 (URL 하드링크)
+                const response = await fetch('https://0e98-112-220-78-250.ngrok-free.app/CreateInvoice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: '상품명',
+                        description: '상품 설명',
+                        payload: 'unique_payload',
+                        currency: 'XTR',
+                        prices: [{ label: '상품명', amount: 1000 }], // 가격은 최소 단위로 설정
+                    }),
+                });
+
+                const { invoiceLink } = await response.json();
+                unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣invoiceLink: " + invoiceLink);
+
+                // 결제 UI 호출
+                Telegram.WebApp.openInvoice(invoiceLink, (status) => {
+                    var logMessage;
+                    if (status === 'paid') {
+                        logMessage = "Payment successful";
+                        // 결제 성공 후 처리 로직
+                    } else {
+                        logMessage = 'Payment status:' + status;
+                        // 결제 실패 또는 취소 시 처리 로직
+                    }
+                    console.log(logMessage);
+                    unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣Payment Result: " + logMessage);
+                });
+            } catch (error) {
+                console.error('Payment initiation failed:', error);
+                // ✅ 유니티 확인 메세지
+                unityInstance.SendMessage("TelegramStarTestManager", "ToUnityMessage", "▣Payment initiation failed: " + error);
+            }
+        }
+
+        // TON Connect
+        var tonConnectUI = null;
+        function initTonConnectUI() {
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: 'https://dl.dropboxusercontent.com/scl/fi/s325wuk2agso3cd9b2nen/tonconnect-manifest.json?rlkey=vnzw6psrgnhfyyu3t5jhwq1dl',
+                buttonRootId: 'ton-connect-button'
+            });
+            connectButtonOff();
+            tonConnectUI.onStatusChange((walletInfo) => {
+                if (walletInfo) {
+                    console.log("지갑 연결됨:", walletInfo);
+                    console.log("지갑 주소:", walletInfo.account.address);
+                    SendMessage("TONConnect", "OnWalletConnected", walletInfo.account.address);
+                } else {
+                    console.log("지갑 연결 해제됨");
+                    SendMessage("TONConnect", "OnWalletDisconnected", "");
+                }
+            });
+        }
+        function getWalletAddress() {
+            if (!tonConnectUI) return;
+            return tonConnectUI.wallet ? tonConnectUI.wallet.account.address : null;
+        }
+        function sendTransaction(to, amount) {
+            if (!tonConnectUI) return;
+            if (!tonConnectUI.wallet) return;
+            tonConnectUI.sendTransaction({
+                messages: [{ address: to, amount: amount.toString() }]
+            });
+        }
+        function connectButtonOff() {
+            document.getElementById("ton-connect-button").style.display = "none";
+        }
+        function connectButtonOn() {
+            document.getElementById("ton-connect-button").style.display = "block";
+        }
+    </script>
+</body>
+</html>
