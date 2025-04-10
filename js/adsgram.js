@@ -7,10 +7,10 @@ function initAdsGram(unityInstance){
     unityInstanceRef = unityInstance;    
     //�ʱ�ȭ
     try{
-        const adController = window.Adsgram.init({ 
-            blockId: "7675713850",
-            debug: true,
-            debugBannerType: "FullscreenMedia" 
+            adController = window.Adsgram.init({ 
+                blockId: "7675713850",
+                debug: true,
+                debugBannerType: "FullscreenMedia" 
         });
         // AdsGram.init({
         //     appId: '2f6ecfda7d9d4993b6a52591989f1a5f',      // AdsGram���� �߱޹��� �� ID (�ʼ�)
