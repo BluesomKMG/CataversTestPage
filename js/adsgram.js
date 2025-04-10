@@ -5,13 +5,17 @@ let unityInstanceRef = null;
 function initAdsGram(unityInstance){
     unityInstanceRef = unityInstance;    
     //�ʱ�ȭ
-    AdsGram.init({
-        appId: '2f6ecfda7d9d4993b6a52591989f1a5f',      // AdsGram���� �߱޹��� �� ID (�ʼ�)
-        userId: Telegram.WebApp.initDataUnsafe.user?.id || "guest",        // ���� ID (��: Telegram user id) (�ʼ�) 
-        language: 'en',           // ���� ����: ��� (�⺻�� ������ ���� & ���� en, ko, ru �� ISO 639-1 ����)
-    });
-
-    unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", "? AdsGram �ʱ�ȭ �Ϸ�");
+    try{
+        AdsGram.init({
+            appId: '2f6ecfda7d9d4993b6a52591989f1a5f',      // AdsGram���� �߱޹��� �� ID (�ʼ�)
+            userId: Telegram.WebApp.initDataUnsafe.user?.id || "guest",        // ���� ID (��: Telegram user id) (�ʼ�) 
+            language: 'en',           // ���� ����: ��� (�⺻�� ������ ���� & ���� en, ko, ru �� ISO 639-1 ����)
+        });
+        unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init");
+    }
+    catch(e){
+        unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init Error : " + e.message);
+    }
 }
 
 function showAD(adType){

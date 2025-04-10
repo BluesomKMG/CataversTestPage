@@ -6,9 +6,9 @@ function initializeTelegram(unityInstance) {
         chat: Telegram.WebApp.initDataUnsafe.chat
     }));
 
-    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'platform:' + Telegram.WebApp.platform);
-    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'sendData ���� ����:' + (typeof Telegram.WebApp.sendData));
-    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', 'Telegram.WebApp.initData�� �����ϴ°�? ' + Telegram.WebApp.initData);
+    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', '<<platform>> :' + Telegram.WebApp.platform);
+    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', '<<sendData>> :' + (typeof Telegram.WebApp.sendData));
+    unityInstance.SendMessage('TelegramStarTestManager', 'ToUnityMessage', '<<Telegram.WebApp.initData>> : ' + Telegram.WebApp.initData);
 
     window.requestPayment = function (itemId) {
         Telegram.WebApp.sendData(JSON.stringify({
