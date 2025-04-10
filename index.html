@@ -102,6 +102,7 @@
             telegramScript.onload = () => {
                 initializeTelegram(unityInstance); // 전역함수 호출
                 loadTonScript(); // 다음 단계
+                loadAdsGramScript(); // 광고 연동
             };
             document.body.appendChild(telegramScript);
         };
