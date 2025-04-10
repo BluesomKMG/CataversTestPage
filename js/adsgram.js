@@ -8,7 +8,7 @@ function initAdsGram(unityInstance){
     //�ʱ�ȭ
     try{
             adController = window.Adsgram.init({ 
-                blockId: "7675713850",
+                blockId: "int-9770",
                 debug: true,
                 debugBannerType: "FullscreenMedia" 
         });
