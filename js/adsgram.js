@@ -1,54 +1,79 @@
 
 let unityInstanceRef = null;
+let adController = null;
 
 //adsgram�� �ʱ�ȭ �մϴ�
 function initAdsGram(unityInstance){
     unityInstanceRef = unityInstance;    
     //�ʱ�ȭ
     try{
-        AdsGram.init({
-            appId: '2f6ecfda7d9d4993b6a52591989f1a5f',      // AdsGram���� �߱޹��� �� ID (�ʼ�)
-            userId: Telegram.WebApp.initDataUnsafe.user?.id || "guest",        // ���� ID (��: Telegram user id) (�ʼ�) 
-            language: 'en',           // ���� ����: ��� (�⺻�� ������ ���� & ���� en, ko, ru �� ISO 639-1 ����)
+        const adController = window.Adsgram.init({ 
+            blockId: "7675713850",
+            debug: true,
+            debugBannerType: "FullscreenMedia" 
         });
+        // AdsGram.init({
+        //     appId: '2f6ecfda7d9d4993b6a52591989f1a5f',      // AdsGram���� �߱޹��� �� ID (�ʼ�)
+        //     userId: Telegram.WebApp.initDataUnsafe.user?.id || "guest",        // ���� ID (��: Telegram user id) (�ʼ�) 
+        //     language: 'en',           // ���� ����: ��� (�⺻�� ������ ���� & ���� en, ko, ru �� ISO 639-1 ����)
+        // });
         unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init");
+
+        adController.addEventListener('onStart', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onStart");
+        });
+        adController.addEventListener('onSkip', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onSkip");
+        });
+        adController.addEventListener('onReward', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onReward");
+        });
+        adController.addEventListener('onComplete', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onComplete");
+        });
+        adController.addEventListener('onError', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onError");
+        });
+        adController.addEventListener('onBannerNotFound', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onBannerNotFound");
+        });
+        adController.addEventListener('onNonStopShow', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onNonStopShow");
+        });
+        adController.addEventListener('onTooLongSession', () => {
+            unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onTooLongSession");
+        });
     }
     catch(e){
         unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init Error : " + e.message);
     }
 }
 
-function showAD(adType){
-    unityInstanceRef?.SendMessage("TelegramStarTestManager", "ToUnityMessage", "���� ��û :" + adType);
-    AdsGram.showAd({
-        placement: adType,    //���� ���� (��: 'reward', 'banner', 'interstitial')
-        onComplete: () => {
-            console.log("? ���� ��û �Ϸ�! ���� ����");
-            unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdComplete");
-        },
-        onClose: () => {
-            console.log("?? ������ ����");
-            unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdClose");
-        },
-        onError: (e) => {
-            console.error("? ���� ����:", e); 
-            unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdError", String(e));
-        }
-    });
+async function showAD(){
+    try {
+        const showPromiseResult = await adController.show();
+        // user watch ad till the end
+        // your code to reward user
+        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdComplete");
+      } catch (e) {
+        // user get error during playing ad or skip ad
+        // do nothing or whatever you want
+        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdError", String(e));
+      }
 }
 
 //reward - ��û�Ϸ�� ���� ���� 
-window.adsgramShowAdReward = () => showAD('reward');
+window.adsgramShowAdReward = () => showAD();
 //banner - ȭ�� �ϴ�/��� ��� ����
-window.adsgramShowAdBanner = () => showAD('banner'); 
+//window.adsgramShowAdBanner = () => showAD('banner'); 
 //interstitial - ���鱤�� (���� ����)
-window.adsgramShowAdInterstitial = () => showAD('interstitial');
+//window.adsgramShowAdInterstitial = () => showAD('interstitial');
 
-window.adsgramIsAvailable = function () {
-    const available = AdsGram.isAvailable('reward'); // true �Ǵ� false
-    unityInstanceRef?.SendMessage("TelegramStarTestManager", "ToUnityMessage", "���� �غ� ���� Ȯ��: " + available);
-    if(available) 
-        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdReady");
-    else
-        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdWait");
-}
+// window.adsgramIsAvailable = function () {
+//     const available = AdsGram.isAvailable('reward'); // true �Ǵ� false
+//     unityInstanceRef?.SendMessage("TelegramStarTestManager", "ToUnityMessage", "���� �غ� ���� Ȯ��: " + available);
+//     if(available) 
+//         unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdReady");
+//     else
+//         unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdWait");
+// }
