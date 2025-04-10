@@ -17,8 +17,7 @@ function initAdsGram(unityInstance){
         //     userId: Telegram.WebApp.initDataUnsafe.user?.id || "guest",        // ���� ID (��: Telegram user id) (�ʼ�) 
         //     language: 'en',           // ���� ����: ��� (�⺻�� ������ ���� & ���� en, ko, ru �� ISO 639-1 ����)
         // });
-        unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init");
-
+        
         adController.addEventListener('onStart', () => {
             unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onStart");
         });
@@ -43,6 +42,8 @@ function initAdsGram(unityInstance){
         adController.addEventListener('onTooLongSession', () => {
             unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram onTooLongSession");
         });
+
+        unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init");
     }
     catch(e){
         unityInstanceRef.SendMessage("TelegramStarTestManager", "ToUnityMessage", " AdsGram Init Error : " + e.message);
@@ -54,11 +55,11 @@ async function showAD(){
         const showPromiseResult = await adController.show();
         // user watch ad till the end
         // your code to reward user
-        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdComplete");
+        unityInstanceRef?.SendMessage("TelegramStarTestManager", "ToUnityMessage", "SHOW AD SUCCESS : GET REWARD");
       } catch (e) {
         // user get error during playing ad or skip ad
         // do nothing or whatever you want
-        unityInstanceRef?.SendMessage("TelegramStarTestManager", "AdError", String(e));
+        unityInstanceRef?.SendMessage("TelegramStarTestManager", "ToUnityMessage", String(e));
       }
 }
 
